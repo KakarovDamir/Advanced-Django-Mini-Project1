@@ -11,8 +11,8 @@ done
 case "$1" in
     "web")
         # Create migrations directory if it doesn't exist
-        mkdir -p usersapp/migrations
-        touch usersapp/migrations/__init__.py
+        mkdir -p users/migrations
+        touch users/migrations/__init__.py
         
         # Remove existing migrations and pyc files
         find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
@@ -44,10 +44,10 @@ case "$1" in
         python manage.py runserver 0.0.0.0:8000
         ;;
     "celery")
-        celery -A miniproject worker --loglevel=info
+        celery -A sales_trading_app worker --loglevel=info
         ;;
     "celery-beat")
-        celery -A miniproject beat --loglevel=info
+        celery -A sales_trading_app beat --loglevel=info
         ;;
     *)
         exec "$@"
