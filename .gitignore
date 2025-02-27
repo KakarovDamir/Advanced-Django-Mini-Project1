@@ -1,0 +1,67 @@
+# Python #
+##########
+*.pyc
+*.pyo
+__pycache__/
+*.swp
+*.swo
+*.DS_Store
+
+# Virtual Environment #
+#######################
+venv/
+env/
+*.venv
+
+# Django #
+##########
+db.sqlite3
+media/
+staticfiles/
+static/
+*.log
+
+# Migrations #
+##############
+*/migrations/*
+!*/migrations/__init__.py
+
+# Environment Variables #
+#########################
+.env
+*.env
+
+# VS Code #
+###########
+.vscode/
+
+# PyCharm #
+###########
+.idea/
+
+# Jupyter Notebooks #
+#####################
+.ipynb_checkpoints/
+
+# Celery #
+##########
+celerybeat-schedule
+
+# Coverage Reports #
+####################
+htmlcov/
+.coverage
+.tox/
+.cache/
+
+# Docker #
+##########
+*.dockerfile
+.dockerignore
+__pycache__/
+
+# Node.js #
+##########
+node_modules/
+npm-debug.log
+yarn-error.log
