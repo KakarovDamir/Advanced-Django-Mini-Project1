@@ -14,4 +14,3 @@ urlpatterns = [
     path('customer-dashboard/', CustomerDashboardView.as_view(), name='customer-dashboard'),
     path('profile/', UserProfileUpdateView.as_view(), name='user-profile-update'),
 ]
-    

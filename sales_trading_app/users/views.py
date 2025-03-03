@@ -2,11 +2,9 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import get_user_model
-
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, UserProfileSerializer
-from .permissions import IsAdminUser, IsTraderUser, IsSalesRepresentative, IsClient
-
-
+from .permissions import IsAdmin, IsTrader, IsSalesRep, IsCustomer
 
 User = get_user_model()
 
@@ -27,39 +25,36 @@ class LoginView(generics.GenericAPIView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdmin]
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        user = self.request.user
-        return user
-
+        return self.request.user
 
 class TraderDashboardView(generics.GenericAPIView):
-    permission_classes = [IsTraderUser]
+    permission_classes = [IsTrader]
 
     def get(self, request, *args, **kwargs):
-        return Response({"message": "Trader Dashboard: Access granted."}, status=status.HTTP_200_OK)
+        return Response({"message": "Welcome to the Trader Dashboard"}, status=status.HTTP_200_OK)
 
 class SalesDashboardView(generics.GenericAPIView):
-    permission_classes = [IsSalesRepresentative]
+    permission_classes = [IsSalesRep]
 
     def get(self, request, *args, **kwargs):
-        return Response({"message": "Sales Dashboard: Welcome to your workspace."}, status=status.HTTP_200_OK)
+        return Response({"message": "Welcome to the Sales Dashboard"}, status=status.HTTP_200_OK)
 
 class CustomerDashboardView(generics.GenericAPIView):
-    permission_classes = [IsClient]
+    permission_classes = [IsCustomer]
 
     def get(self, request, *args, **kwargs):
-        return Response({"message": "Customer Dashboard: Explore your account."}, status=status.HTTP_200_OK)
+        return Response({"message": "Welcome to the Customer Dashboard"}, status=status.HTTP_200_OK)
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        user = self.request.user
-        return user
+        return self.request.user

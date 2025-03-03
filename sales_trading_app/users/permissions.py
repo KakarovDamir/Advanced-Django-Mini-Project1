@@ -1,21 +1,21 @@
 from rest_framework.permissions import BasePermission
 
-class IsAdminUser(BasePermission):
-    """Access allowed only for users with the 'admin' role."""
+class IsAdmin(BasePermission):
+    """Allow access only to Admin users"""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and getattr(request.user, "role", None) == "admin"
+        return request.user.is_authenticated and request.user.role == 'admin'
 
-class IsTraderUser(BasePermission):
-    """Access allowed only for users with the 'trader' role."""
+class IsTrader(BasePermission):
+    """Allow access only to Trader users"""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and getattr(request.user, "role", None) == "trader"
+        return request.user.is_authenticated and request.user.role == 'trader'
 
-class IsSalesRepresentative(BasePermission):
-    """Access allowed only for users with the 'sales_rep' role."""
+class IsSalesRep(BasePermission):
+    """Allow access only to Sales Representatives"""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and getattr(request.user, "role", None) == "sales_rep"
+        return request.user.is_authenticated and request.user.role == 'sales_rep'
 
-class IsClient(BasePermission):
-    """Access allowed only for users with the 'customer' role."""
+class IsCustomer(BasePermission):
+    """Allow access only to Customers"""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and getattr(request.user, "role", None) == "customer"
+        return request.user.is_authenticated and request.user.role == 'customer'

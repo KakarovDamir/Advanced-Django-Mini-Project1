@@ -3,12 +3,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import F
+import sentry_sdk
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from users.permissions import IsAdminUser
+from users.permissions import IsAdmin
 from .models import SalesOrder, Invoice, Discount
 from django.db import transaction as db_transaction
 from .serializers import SalesOrderSerializer, InvoiceSerializer, DiscountSerializer
+from products.models import Product
 from rest_framework import serializers
 import pdfkit
 from django.core.files.base import ContentFile
@@ -27,7 +29,7 @@ class SalesOrderCreateView(generics.CreateAPIView):
         quantity = serializer.validated_data['quantity']
 
         if product.quantity_available < quantity:
-            raise serializers.ValidationError("Not enough")
+            raise serializers.ValidationError("Not enough stock available")
 
         discount = Discount.objects.filter(product=product, active=True).first()
         discount_amount = 0
@@ -50,7 +52,7 @@ class SalesOrderListView(generics.ListAPIView):
 
 class SalesOrderApprovalView(generics.UpdateAPIView):
     serializer_class = SalesOrderSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def patch(self, request, *args, **kwargs):
         order = get_object_or_404(SalesOrder, id=kwargs["pk"], status="pending")
@@ -61,17 +63,17 @@ class SalesOrderApprovalView(generics.UpdateAPIView):
 
             pdf_content = f"""
             <h1>Invoice for Order #{order.id}</h1>
-            <p>Customer: {order.customer.username}</p>
             <p>Product: {order.product.name}</p>
-            <p>Total Price: ${order.price}</p>
             <p>Quantity: {order.quantity}</p>
+            <p>Total Price: ${order.price}</p>
+            <p>Customer: {order.customer.username}</p>
             """
 
             pdf_file = pdfkit.from_string(pdf_content, False)
             invoice = Invoice.objects.create(sales_order=order)
             invoice.pdf.save(f"invoice_{order.id}.pdf", ContentFile(pdf_file))
 
-        return Response({"message": "Order approved", "invoice_id": invoice.id}, status=status.HTTP_200_OK)
+        return Response({"message": "Order approved and invoice generated", "invoice_id": invoice.id}, status=status.HTTP_200_OK)
 
 class InvoiceGenerateView(generics.CreateAPIView):
     serializer_class = InvoiceSerializer
@@ -82,10 +84,10 @@ class InvoiceGenerateView(generics.CreateAPIView):
 
         pdf_content = f"""
         <h1>Invoice for Order #{order.id}</h1>
-        <p>Customer: {order.customer.username}</p>
         <p>Product: {order.product.name}</p>
-        <p>Total Price: ${order.price}</p>
         <p>Quantity: {order.quantity}</p>
+        <p>Total Price: ${order.price}</p>
+        <p>Customer: {order.customer.username}</p>
         """
 
         pdf_file = pdfkit.from_string(pdf_content, False)
@@ -110,7 +112,7 @@ class CreatePaymentIntentView(APIView):
 
         try:
             intent = stripe.PaymentIntent.create(
-                amount=int(order.price * 80),
+                amount=int(order.price * 100),
                 currency="usd",
                 payment_method_types=["card"],
             )

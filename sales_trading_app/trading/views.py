@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import transaction as db_transaction
 from .models import Order, Transaction
 from .serializers import OrderSerializer, TransactionSerializer
+from products.models import Product
 
 class OrderCreateView(generics.CreateAPIView):
     serializer_class = OrderSerializer
@@ -35,6 +36,7 @@ class ExecuteTradeView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         order_id = request.data.get("order_id")
+        trade_transaction = None
         try:
             with db_transaction.atomic():
                 order = Order.objects.select_for_update().get(id=order_id, status="pending")
@@ -47,7 +49,7 @@ class ExecuteTradeView(generics.GenericAPIView):
                 ).first()
 
                 if not opposite_order:
-                    return Response({"error": "No matching orders"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "No matching orders found"}, status=status.HTTP_400_BAD_REQUEST)
 
                 trade_quantity = min(order.quantity, opposite_order.quantity)
 
@@ -74,5 +76,5 @@ class ExecuteTradeView(generics.GenericAPIView):
                 return Response(TransactionSerializer(transaction).data, status=status.HTTP_201_CREATED)
 
         except Order.DoesNotExist:
-            return Response({"error": "Order not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Order not found or already processed"}, status=status.HTTP_400_BAD_REQUEST)
 
